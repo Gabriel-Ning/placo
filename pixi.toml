@@ -13,7 +13,7 @@ pkg-config = "*"
 eigen = "*"
 ros-jazzy-pinocchio = "*"
 eiquadprog = "*"
-jsoncpp = "*"
+jsoncpp = "1.9.6.*"
 rattler-build = "*"
 
 [tasks]

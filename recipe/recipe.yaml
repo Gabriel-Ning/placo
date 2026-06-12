@@ -30,11 +30,12 @@ requirements:
     - eigen
     - ros-jazzy-pinocchio
     - eiquadprog
-    - jsoncpp
+    # ros-jazzy-desktop (vtk) pins jsoncpp 1.9.6, so build against that ABI
+    - jsoncpp 1.9.6.*
   run:
     - ros-jazzy-pinocchio
     - eiquadprog
-    - jsoncpp
+    - jsoncpp >=1.9.6,<1.9.7
 
 tests:
   - script:
