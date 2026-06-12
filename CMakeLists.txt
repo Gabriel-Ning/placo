@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
-project(placo)
+# Keep this version in sync with pyproject.toml
+project(placo VERSION 0.9.23)
+
+option(PLACO_BUILD_PYTHON_BINDINGS "Build the Python bindings module" ON)
 
 find_package(Threads)
 set(COAL_DISABLE_HPP_FCL_WARNINGS TRUE)
 find_package(pinocchio REQUIRED)
 find_package(eiquadprog REQUIRED)
-find_package(eigenpy REQUIRED)
 find_package(jsoncpp REQUIRED)
+
+if(PLACO_BUILD_PYTHON_BINDINGS)
+  find_package(eigenpy REQUIRED)
+endif()
 
 # Enable C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -25,7 +31,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_L
 endif()
 
 
-find_package (Eigen3 3 REQUIRED NO_MODULE)
+find_package (Eigen3 REQUIRED NO_MODULE)
 
 add_library(libplaco SHARED
     # Wrappers
@@ -116,10 +122,15 @@ add_library(libplaco SHARED
     ${PROTO_HDRS}  
 )
 
+# Installed as libplaco.so (instead of the default liblibplaco.so)
+set_target_properties(libplaco PROPERTIES OUTPUT_NAME placo EXPORT_NAME placo)
+add_library(placo::placo ALIAS libplaco)
+
 target_include_directories(libplaco PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> 
-  ${PROTOBUF_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR})
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>
+  ${PROTOBUF_INCLUDE_DIRS})
 
 target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
@@ -137,6 +148,8 @@ if(TARGET rhoban_utils)
   target_compile_definitions(libplaco PUBLIC -DHAVE_RHOBAN_UTILS)
   target_link_libraries(libplaco PUBLIC rhoban_utils)
 endif ()
+
+if(PLACO_BUILD_PYTHON_BINDINGS)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
@@ -180,13 +193,51 @@ ADD_CUSTOM_TARGET(placo_utils_files ALL
 
 if (APPLE)
 set_target_properties(placo PROPERTIES INSTALL_RPATH "@loader_path/../..")
-set_target_properties(libplaco PROPERTIES INSTALL_RPATH "@loader_path")
 else()
 set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
-set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
 endif()
 
-install(TARGETS libplaco DESTINATION lib)
 install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
 install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
 install(DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils DESTINATION ${PYTHON_SITELIB})
+
+endif() # PLACO_BUILD_PYTHON_BINDINGS
+
+if (APPLE)
+set_target_properties(libplaco PROPERTIES INSTALL_RPATH "@loader_path")
+else()
+set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
+endif()
+
+# C++ runtime/dev installation: headers, shared library and CMake package
+# config so that consumers can `find_package(placo)` and link `placo::placo`.
+include(CMakePackageConfigHelpers)
+
+install(TARGETS libplaco
+        EXPORT placoTargets
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/placo
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h")
+
+install(EXPORT placoTargets
+        NAMESPACE placo::
+        DESTINATION lib/cmake/placo)
+
+configure_package_config_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/placoConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/placoConfig.cmake
+    INSTALL_DESTINATION lib/cmake/placo)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/placoConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMinorVersion)
+
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake/placoConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/cmake/placoConfigVersion.cmake
+        DESTINATION lib/cmake/placo)

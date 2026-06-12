@@ -1,0 +1,26 @@
+[workspace]
+name = "placo"
+version = "0.9.23"
+description = "Pixi environment for building the placo conda package"
+channels = ["conda-forge", "https://prefix.dev/robostack-jazzy"]
+platforms = ["linux-64"]
+
+[dependencies]
+cxx-compiler = "*"
+cmake = ">=3.16"
+ninja = "*"
+pkg-config = "*"
+eigen = "*"
+ros-jazzy-pinocchio = "*"
+eiquadprog = "*"
+jsoncpp = "*"
+rattler-build = "*"
+
+[tasks]
+configure = "cmake -S . -B .pixi/build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PIXI_PROJECT_ROOT/.pixi/install -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DPLACO_BUILD_PYTHON_BINDINGS=OFF"
+build = "cmake --build .pixi/build --parallel"
+install = "cmake --install .pixi/build"
+clean = "rm -rf .pixi/build .pixi/install dist"
+conda-build = "bash tools/conda_build.sh"
+conda-upload = "bash tools/conda_upload.sh"
+conda-smoke = { cmd = "bash tools/conda_smoke.sh", depends-on = ["conda-build"] }

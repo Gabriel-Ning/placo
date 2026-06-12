@@ -1,0 +1,13 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Threads)
+find_dependency(Eigen3)
+find_dependency(pinocchio)
+find_dependency(eiquadprog)
+find_dependency(jsoncpp)
+
+include("${CMAKE_CURRENT_LIST_DIR}/placoTargets.cmake")
+
+check_required_components(placo)

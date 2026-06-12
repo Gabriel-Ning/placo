@@ -39,8 +39,8 @@ void WheelTask::update()
   // With an omniwheel, we remove the lateral sliding constraint (along contact y axis)
   if (omniwheel)
   {
-    Eigen::MatrixXd new_A = A({ 0, 2 }, Eigen::all);
-    Eigen::MatrixXd new_b = b({ 0, 2 }, Eigen::all);
+    Eigen::MatrixXd new_A = A({ 0, 2 }, Eigen::placeholders::all);
+    Eigen::MatrixXd new_b = b({ 0, 2 }, Eigen::placeholders::all);
     A = new_A;
     b = new_b;
   }

@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/prefix-dev/recipe-format/main/schema.json
+
+context:
+  name: placo
+  version: "0.9.23"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  path: ..
+
+build:
+  number: 0
+  skip:
+    - not linux
+  script:
+    - cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_PREFIX_PATH=$PREFIX -DPLACO_BUILD_PYTHON_BINDINGS=OFF
+    - cmake --build build --parallel
+    - cmake --install build
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - cmake >=3.16
+    - ninja
+    - pkg-config
+  host:
+    - eigen
+    - ros-jazzy-pinocchio
+    - eiquadprog
+    - jsoncpp
+  run:
+    - ros-jazzy-pinocchio
+    - eiquadprog
+    - jsoncpp
+
+tests:
+  - script:
+      - test -f $PREFIX/lib/libplaco.so
+      - test -f $PREFIX/include/placo/kinematics/kinematics_solver.h
+      - test -f $PREFIX/include/placo/dynamics/dynamics_solver.h
+      - test -f $PREFIX/lib/cmake/placo/placoConfig.cmake
+      - test -f $PREFIX/lib/cmake/placo/placoTargets.cmake
+
+about:
+  homepage: https://github.com/rhoban/placo
+  repository: https://github.com/Gabriel-Ning/placo
+  summary: "PlaCo: Rhoban Planning and Control (C++ runtime/dev package, no Python bindings)"
+  license: MIT
+  license_file: LICENSE

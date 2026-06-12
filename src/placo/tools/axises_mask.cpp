@@ -76,6 +76,6 @@ Eigen::MatrixXd AxisesMask::apply(Eigen::MatrixXd M)
     M_masked = M;
   }
 
-  return M_masked(indices, Eigen::all);
+  return M_masked(indices, Eigen::placeholders::all);
 }
 }  // namespace placo::tools
