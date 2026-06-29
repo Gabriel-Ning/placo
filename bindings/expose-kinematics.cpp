@@ -124,6 +124,7 @@ void exposeKinematics()
 
           .def("enable_joint_limits", &KinematicsSolver::enable_joint_limits)
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
+          .def("enable_acceleration_limits", &KinematicsSolver::enable_acceleration_limits)
           .def<void (KinematicsSolver::*)(Task&)>("add_task", &KinematicsSolver::add_task)
           .def<void (KinematicsSolver::*)(Constraint&)>("add_constraint", &KinematicsSolver::add_constraint)
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)

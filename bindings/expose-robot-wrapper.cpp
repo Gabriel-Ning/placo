@@ -43,6 +43,8 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("get_joint_acceleration", &RobotType::get_joint_acceleration)
       .def("set_velocity_limit", &RobotType::set_velocity_limit)
       .def("set_velocity_limits", &RobotType::set_velocity_limits)
+      .def("set_acceleration_limit", &RobotType::set_acceleration_limit)
+      .def("set_acceleration_limits", &RobotType::set_acceleration_limits)
       .def("set_torque_limit", &RobotType::set_torque_limit)
       .def("set_joint_limits", &RobotType::set_joint_limits)
       .def(

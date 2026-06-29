@@ -430,6 +430,11 @@ public:
   void enable_velocity_limits(bool enable);
 
   /**
+   * @brief Enables/disables joint acceleration inequalities
+   */
+  void enable_acceleration_limits(bool enable);
+
+  /**
    * @brief Number of tasks
    */
   int tasks_count();
@@ -519,6 +524,7 @@ protected:
   // Modes to limit the DoFs
   bool joint_limits = true;
   bool velocity_limits = false;
+  bool acceleration_limits = false;
 
   void compute_limits_inequalities();
 

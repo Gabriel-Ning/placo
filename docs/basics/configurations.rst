@@ -48,8 +48,9 @@ by using :func:`set_joint_limits <placo.RobotWrapper.set_joint_limits>`:
     # Sets head_pan joint limits to [-1.0, 1.0] rad
     robot.set_joint_limits("head_pan", -1.0, 1.0)
 
-You can also update the velocity and torque limits, by using respectively
-:func:`set_velocity_limit <placo.RobotWrapper.set_velocity_limit>` and
+You can also update the velocity, acceleration and torque limits, by using respectively
+:func:`set_velocity_limit <placo.RobotWrapper.set_velocity_limit>`,
+:func:`set_acceleration_limit <placo.RobotWrapper.set_acceleration_limit>` and
 :func:`set_torque_limit <placo.RobotWrapper.set_torque_limit>`.
 
 Adding configuration noise

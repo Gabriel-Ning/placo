@@ -282,6 +282,11 @@ void KinematicsSolver::enable_velocity_limits(bool enable)
   velocity_limits = enable;
 }
 
+void KinematicsSolver::enable_acceleration_limits(bool enable)
+{
+  acceleration_limits = enable;
+}
+
 int KinematicsSolver::tasks_count()
 {
   return tasks.size();
@@ -289,9 +294,9 @@ int KinematicsSolver::tasks_count()
 
 void KinematicsSolver::compute_limits_inequalities()
 {
-  if (velocity_limits && dt == 0.)
+  if ((velocity_limits || acceleration_limits) && dt == 0.)
   {
-    throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
+    throw std::runtime_error("You enabled velocity or acceleration limits but didn't set solver.dt");
   }
 
   if (joint_limits)
@@ -307,6 +312,39 @@ void KinematicsSolver::compute_limits_inequalities()
   {
     problem.add_constraint(qd->expr(6) <= dt * robot.model.velocityLimit.bottomRows(N - 6));
     problem.add_constraint(-dt * robot.model.velocityLimit.bottomRows(N - 6) <= qd->expr(6));
+  }
+
+  if (acceleration_limits)
+  {
+    const int n = N - 6;
+    const double dt_sq = dt * dt;
+    Eigen::VectorXd a = robot.acceleration_limit.bottomRows(n);
+    Eigen::VectorXd dq_prev = robot.state.qd.bottomRows(n) * dt;
+
+    Eigen::VectorXd delta_q_max =
+        pinocchio::difference(robot.model, robot.state.q, robot.model.upperPositionLimit);
+    Eigen::VectorXd delta_q_min =
+        pinocchio::difference(robot.model, robot.model.lowerPositionLimit, robot.state.q);
+
+    for (int k = 0; k < n; k++)
+    {
+      int v_idx = k + 6;
+      double a_k = a[k];
+      if (!std::isfinite(a_k) || a_k <= 0.)
+      {
+        continue;
+      }
+
+      double window = a_k * dt_sq;
+      double brake_up = dt * std::sqrt(std::max(0., 2. * a_k * delta_q_max[v_idx]));
+      double brake_lo = dt * std::sqrt(std::max(0., 2. * a_k * delta_q_min[v_idx]));
+
+      double h_up = std::min(window + dq_prev[k], brake_up);
+      double h_lo = std::min(window - dq_prev[k], brake_lo);
+
+      problem.add_constraint(qd->expr(v_idx, 1) <= h_up);
+      problem.add_constraint(-h_lo <= qd->expr(v_idx, 1));
+    }
   }
 }
 

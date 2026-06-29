@@ -129,6 +129,8 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // Creating data
   data = new pinocchio::Data(model);
 
+  acceleration_limit = Eigen::VectorXd::Constant(model.nv, std::numeric_limits<double>::infinity());
+
   // Assuming that motors with limits both equals to zero are not defined in the
   // URDF, setting them to the maximum possible value
   for (int k = 0; k < model.nq; k++)
@@ -259,6 +261,19 @@ void RobotWrapper::set_velocity_limits(double limit)
   for (auto& name : joint_names())
   {
     set_velocity_limit(name, limit);
+  }
+}
+
+void RobotWrapper::set_acceleration_limit(const std::string& name, double limit)
+{
+  acceleration_limit[get_joint_v_offset(name)] = limit;
+}
+
+void RobotWrapper::set_acceleration_limits(double limit)
+{
+  for (auto& name : joint_names())
+  {
+    set_acceleration_limit(name, limit);
   }
 }
 

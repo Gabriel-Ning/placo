@@ -224,6 +224,23 @@ public:
   void set_velocity_limits(double limit);
 
   /**
+   * @brief Sets the acceleration limit for a given joint.
+   *
+   * By default, joints have no acceleration limit (infinity). This method is used to set per-joint limits
+   * for use with :func:`KinematicsSolver::enable_acceleration_limits`.
+   *
+   * @param name joint name
+   * @param limit acceleration limit [rad/s²] or [m/s²]
+   */
+  void set_acceleration_limit(const std::string& name, double limit);
+
+  /**
+   * @brief Set the acceleration limits for **all** the joints
+   * @param limit limit [rad/s²] or [m/s²]
+   */
+  void set_acceleration_limits(double limit);
+
+  /**
    * @brief Sets the torque limit for a given joint.
    *
    * By default, the joint limits are loaded from the URDF file, this method can be used to override them.
@@ -684,6 +701,11 @@ public:
    * @brief Pinocchio model
    */
   pinocchio::Model model;
+
+  /**
+   * @brief Per-joint acceleration limits (tangent space, size nv). Unset joints are +inf.
+   */
+  Eigen::VectorXd acceleration_limit;
 
   /**
    * @brief Pinocchio collision model
